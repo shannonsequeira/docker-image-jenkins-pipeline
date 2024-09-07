@@ -59,8 +59,10 @@ pipeline {
     }
     post {
         always {
-            // Cleanup or notification steps
-            bat 'echo Pipeline execution completed.'
+            node {
+                bat 'echo Pipeline execution completed.'
+            }
         }
     }
+
 }
