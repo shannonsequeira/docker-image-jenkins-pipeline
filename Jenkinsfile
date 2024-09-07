@@ -8,9 +8,20 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                script {
+                    // Clean up the workspace if the repository already exists
+                    bat '''
+                    IF EXIST docker-image-jenkins-pipeline (
+                        rmdir /s /q docker-image-jenkins-pipeline
+                    )
+                    '''
+                }
                 // Cloning the repository
-                bat 'git clone https://github.com/shannonsequeira/docker-image-jenkins-pipeline.git'
-                bat 'cd docker-image-jenkins-pipeline && git checkout main'
+                bat '''
+                git clone https://github.com/shannonsequeira/docker-image-jenkins-pipeline.git
+                cd docker-image-jenkins-pipeline
+                git checkout main
+                '''
             }
         }
         stage('Build Docker Image') {
