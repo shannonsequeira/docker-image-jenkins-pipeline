@@ -48,7 +48,7 @@ pipeline {
                     // Login to Docker Hub using credentials from Jenkins
                     withCredentials([usernamePassword(credentialsId: 'db40164e-3632-424b-9249-22b7d65dcb72', usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
                         bat '''
-                        echo %DOCKER_HUB_PASSWORD% | docker login -u %DOCKER_HUB_USERNAME% --password-stdin
+                        docker login -u %DOCKER_HUB_USERNAME% -p %DOCKER_HUB_PASSWORD% docker.io
                         IF ERRORLEVEL 1 exit /b %ERRORLEVEL%
                         '''
                     }
@@ -60,6 +60,7 @@ pipeline {
                 }
             }
         }
+
     }
     post {
         always {
