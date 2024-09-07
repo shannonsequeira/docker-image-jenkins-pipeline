@@ -59,10 +59,7 @@ pipeline {
     }
     post {
         always {
-            node {
-                bat 'echo Pipeline execution completed.'
-            }
+            bat 'echo Pipeline execution completed.'
         }
     }
-
 }
