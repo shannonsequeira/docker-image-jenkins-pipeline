@@ -1,9 +1,14 @@
 pipeline {
     agent any
+    environment {
+        DOCKER_HUB_USERNAME = credentials('DOCKER_HUB_USERNAME') // Jenkins credential ID for Docker Hub username
+        DOCKER_HUB_PASSWORD = credentials('DOCKER_HUB_PASSWORD') // Jenkins credential ID for Docker Hub password
+        DOCKER_IMAGE_NAME = 'my-pipeline:latest'
+        CONTAINER_NAME = 'my-pipeline-container'
+    }
     stages {
         stage('Checkout') {
             steps {
-                // Cloning the repository
                 bat '''git clone https://github.com/shannonsequeira/docker-image-jenkins-pipeline.git
                 git checkout main
                 '''
@@ -12,33 +17,35 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Building the Docker image
-                    bat 'docker build -t my-pipeline:latest .'
+                    bat 'docker build -t %DOCKER_IMAGE_NAME% .'
                 }
             }
         }
         stage('Run Docker Container') {
             steps {
                 script {
-                    // Running the Docker container in daemon mode
-                    bat 'docker run -d --name my-pipeline-container my-pipeline:latest'
+                    bat '''
+                    docker stop %CONTAINER_NAME% || exit 0
+                    docker rm %CONTAINER_NAME% || exit 0
+                    '''
+                    bat 'docker run -d --name %CONTAINER_NAME% %DOCKER_IMAGE_NAME%'
                 }
             }
         }
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    // Login to Docker Hub
-                    bat 'docker login -u dockermcauser -p #dock2024'
-                    // Push the Docker image to Docker Hub
-                    bat 'docker push my-pipeline:latest'
+                    // Secure Docker Hub login
+                    bat '''
+                    echo %DOCKER_HUB_PASSWORD% | docker login -u %DOCKER_HUB_USERNAME% --password-stdin
+                    '''
+                    bat 'docker push %DOCKER_IMAGE_NAME%'
                 }
             }
         }
     }
     post {
         always {
-            // Cleanup or notification steps
             bat 'echo \'Pipeline execution completed.\''
         }
     }
