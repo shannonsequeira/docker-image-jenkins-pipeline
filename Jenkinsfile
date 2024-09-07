@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        DOCKER_HUB_CREDENTIALS_ID = 'your-docker-hub-credentials-id'
+        DOCKER_HUB_CREDENTIALS_ID = 'db40164e-3632-424b-9249-22b7d65dcb72'
         DOCKER_IMAGE_NAME = 'my-pipeline:latest'
         CONTAINER_NAME = 'my-pipeline-container'
     }
