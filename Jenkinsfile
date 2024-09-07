@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        DOCKER_IMAGE_NAME = 'my-pipeline:latest'
+        DOCKER_IMAGE_NAME = 'shannonsequeira/my-pipeline:latest'
         CONTAINER_NAME = 'my-pipeline-container'
     }
     stages {
