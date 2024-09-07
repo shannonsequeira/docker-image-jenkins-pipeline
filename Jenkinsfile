@@ -1,7 +1,6 @@
 pipeline {
     agent any
     environment {
-        DOCKER_HUB_CREDENTIALS_ID = 'db40164e-3632-424b-9249-22b7d65dcb72'
         DOCKER_IMAGE_NAME = 'my-pipeline:latest'
         CONTAINER_NAME = 'my-pipeline-container'
     }
@@ -39,19 +38,25 @@ pipeline {
                     bat 'docker stop %CONTAINER_NAME% || exit 0'
                     bat 'docker rm %CONTAINER_NAME% || exit 0'
                     // Running the Docker container in daemon mode
-                    bat "docker run -d --name ${CONTAINER_NAME} ${DOCKER_IMAGE_NAME}"
+                    bat "docker run -d --name %CONTAINER_NAME% %DOCKER_IMAGE_NAME%"
                 }
             }
         }
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    // Login to Docker Hub
-                    withCredentials([usernamePassword(credentialsId: "${DOCKER_HUB_CREDENTIALS_ID}", usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
-                        bat "echo %DOCKER_HUB_PASSWORD% | docker login -u %DOCKER_HUB_USERNAME% --password-stdin"
+                    // Login to Docker Hub using credentials from Jenkins
+                    withCredentials([usernamePassword(credentialsId: 'DOCKER_HUB_CREDENTIALS_ID', usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
+                        bat '''
+                        echo %DOCKER_HUB_PASSWORD% | docker login -u %DOCKER_HUB_USERNAME% --password-stdin
+                        IF ERRORLEVEL 1 exit /b %ERRORLEVEL%
+                        '''
                     }
                     // Push the Docker image to Docker Hub
-                    bat "docker push ${DOCKER_IMAGE_NAME}"
+                    bat '''
+                    docker push %DOCKER_IMAGE_NAME%
+                    IF ERRORLEVEL 1 exit /b %ERRORLEVEL%
+                    '''
                 }
             }
         }
@@ -59,6 +64,9 @@ pipeline {
     post {
         always {
             bat 'echo Pipeline execution completed.'
+        }
+        failure {
+            bat 'echo Pipeline failed.'
         }
     }
 }
